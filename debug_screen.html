@@ -19,7 +19,6 @@
       flex-wrap: wrap;
       height: 100vh;
       overflow: hidden;
-
     }
 
     .section-wrapper {
@@ -27,6 +26,20 @@
 
       > * {
         width: 100%;
+      }
+    }
+
+    @media screen and (max-width: 800px) {
+      body {
+        height: auto;
+        overflow: unset;
+      }
+      .section-wrapper {
+        max-width: 100%;
+      }
+
+      li {
+        font-size: 12px;
       }
     }
 
