@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Browser Capabilities and Details</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      --padding: 10px;
+      font-family: Arial, sans-serif;
+      padding: var(--padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      height: 100vh;
+      overflow: hidden;
+
+    }
+
+    .section-wrapper {
+      max-width: calc(50vw - var(--padding));
+
+      > * {
+        width: 100%;
+      }
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .green {
+      color: green;
+    }
+
+    .red {
+      color: red;
+    }
+
+    .info {
+      color: #333;
+      margin-left: 10px;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="section-wrapper">
+    <h2>Browser Capability and Detail Check</h2>
+    <ul id="capability-list">
+      <li><strong>JavaScript: </strong><span id="js" class="red">Not Supported</span></li>
+    </ul>
+  </div>
+
+  <div class="section-wrapper">
+    <h2>Additional Browser Details</h2>
+    <ul id="browser-details"></ul>
+  </div>
+
+  <div class="section-wrapper">
+    <h2>Static Resources</h2>
+    <ul id="page-specifics"></ul>
+  </div>
+
+
+  <div class="section-wrapper">
+    <h2>Websocket</h2>
+    <ul id="websocket-list"></ul>
+  </div>
+
+  <script>
+    const checkCapability = (name, isSupported) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${name}: </strong><span class="${isSupported ? 'green' : 'red'}">${isSupported ? 'Supported' : 'Not Supported'}</span>`;
+      document.getElementById('capability-list').appendChild(li);
+    };
+
+    // Capabilities
+    document.querySelector("#js").textContent = "Supported";
+    document.querySelector("#js").classList.remove('red');
+    document.querySelector("#js").classList.add('green');
+
+    checkCapability('Cookies', navigator.cookieEnabled);
+    checkCapability('Local Storage', typeof localStorage !== 'undefined');
+    checkCapability('Session Storage', typeof sessionStorage !== 'undefined');
+    checkCapability('Geolocation', 'geolocation' in navigator);
+    checkCapability('WebRTC (getUserMedia)', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+    checkCapability('Service Workers', 'serviceWorker' in navigator);
+    checkCapability('WebSockets', 'WebSocket' in window);
+    checkCapability('IndexedDB', 'indexedDB' in window);
+    checkCapability('Push API', 'PushManager' in window);
+
+    const addDetail = (name, value) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${name}:</strong> <span class="info">${value}</span>`;
+      document.getElementById('browser-details').appendChild(li);
+    };
+
+    // Additional Details
+    addDetail('User Agent', navigator.userAgent);
+    addDetail('Platform', navigator.platform);
+    addDetail('Language', navigator.language);
+    addDetail('Time Zone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    addDetail('Browser Window Resolution', `${window.innerWidth} x ${window.innerHeight}`);
+    addDetail('Device Screen Resolution', `${window.screen.width} x ${window.screen.height}`);
+    addDetail('Device Pixel Ratio', window.devicePixelRatio);
+    addDetail('Do Not Track', navigator.doNotTrack);
+
+    // WebGL Renderer Info
+    function getWebGLInfo() {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) {
+          addDetail('browser-details', 'WebGL', 'Not Supported');
+          return;
+        }
+
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'Unknown';
+        const vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'Unknown';
+
+        addDetail('WebGL Renderer', renderer);
+        addDetail('WebGL Vendor', vendor);
+      } catch (e) {
+        addDetail('WebGL', 'Error retrieving info');
+      }
+    }
+
+    getWebGLInfo();
+
+    const addPageSpecific = (url, loaded) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${url}:</strong> <span class="${loaded ? 'green' : 'red'}">${loaded ? 'Loaded' : 'Load Failed'}</span>`;
+      document.getElementById('page-specifics').appendChild(li);
+    };
+
+    const attachLoadEvents = (element, callback) => {
+      let finished = false;
+
+      const onLoad = () => {
+        if (finished) return;
+        callback(true);
+        finished = true;
+      };
+
+      const onError = () => {
+        if (finished) return;
+        callback(false);
+        finished = true;
+      };
+
+      element.onload = onLoad;
+      element.onerror = onError;
+      element.onreadystatechange = () => {
+        if (finished) return;
+        if (element.readyState === "complete") {
+          onLoad();
+        }
+      };
+    }
+
+    const load_script = (url, onLoadCallback) => {
+      const script = document.createElement('script');
+      attachLoadEvents(script, (result) => {
+        addPageSpecific(url, result)
+
+        if (typeof onLoadCallback == 'function') {
+          onLoadCallback(result);
+        }
+      });
+      script.src = url;
+      document.body.appendChild(script);
+    };
+
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/libraries/jquery-3.6.3.min.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/libraries/bootstrap/bundle.min.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/aws_data_interface/js/logging.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/libraries/leaflet/leaflet-1.3.1.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/libraries/leaflet/proj4js-src-1.0.2.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/libraries/leaflet/proj4-leaflet-1.0.2.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/aws_data_interface/js/RobustWebsocket.js", (successful) => {
+      if (successful) {
+        testWebsocket("wss://dvp.downerautomation.co.nz/graphs/ws/eventsmilford/PL6HtVDlDLeqitCnNt8vG2F273b5Wv3O0u79wXKjIVywkF70CuQSxMMUlbIMRZIR");
+      } else {
+        addWebsocketComplex("Unable to test", "RobustWebsocket.js failed to load")
+      }
+    });
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/constants.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/ws_msg_handlers/image.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/ws_msg_handlers/sign.js");
+    load_script("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/ws_msg_handlers/map.js");
+
+    const load_css = (url) => {
+      let link = document.createElement('link');
+      attachLoadEvents(link, (result) => {
+        addPageSpecific(url, result);
+        document.head.removeChild(link);
+      });
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = url;
+      document.head.appendChild(link);
+    }
+
+    load_css("https://dvp.downerautomation.co.nz/awsdi_static/libraries/bootstrap/min.css");
+    load_css("https://dvp.downerautomation.co.nz/awsdi_static/libraries/leaflet/leaflet-1.3.1.css");
+    load_css("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/events_milford.css");
+    load_css("https://dvp.downerautomation.co.nz/awsdi_static/RED/events_milford/sign.css");
+
+    const addWebsocketSimple = (name, functioning) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${name}: </strong><span class="${functioning ? 'green' : 'red'}">${functioning ? 'Successful' : 'Failed'}</span>`;
+      document.getElementById('websocket-list').appendChild(li);
+    };
+
+    const addWebsocketComplex = (name, errorText) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${name}: </strong><span>${errorText}</span>`;
+      document.getElementById('websocket-list').appendChild(li);
+    };
+
+
+    function testWebsocket(url) {
+      try {
+        let websocket = new RobustWebsocket(url, null, {
+          timeout: 1000,
+          automaticOpen: true,
+          ignoreConnectivityEvents: false,
+          binaryType: 'arraybuffer'
+        });
+
+        setTimeout(() => websocket.close(), 2000);
+
+        websocket.addEventListener('open', function () {
+          addWebsocketSimple('Open', true);
+        });
+
+        websocket.addEventListener('close', function () {
+          addWebsocketSimple('Close', true);
+        });
+
+        websocket.addEventListener('error', function (event) {
+          addWebsocketComplex('Error', JSON.stringify(event));
+        });
+
+        websocket.addEventListener('message', function (event) {
+          const message = JSON.parse(event.data);
+          if (!message.hasOwnProperty('type')) {
+            return;
+          }
+          switch (message.type) {
+            case "map.message":
+              addWebsocketSimple('Event map.message ', true);
+              break;
+            case "sign.message":
+              addWebsocketSimple('Event sign.message ', true);
+              break;
+            case "image.message":
+              addWebsocketSimple('Event image.message ', true);
+              break;
+          }
+        });
+      } catch (e) {
+        addWebsocketComplex('Thrown Error', e);
+      }
+    }
+  </script>
+</body>
+</html>
