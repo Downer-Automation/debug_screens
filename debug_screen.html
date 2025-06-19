@@ -299,12 +299,11 @@
       try {
         document.getElementById('page-url').textContent = (window.location !== window.parent.location) ? document.referrer : document.location.href;
       }catch (error) {
-        document.getElementById('page-url').textContent = error.message;
+        document.getElementById('page-url').textContent = error;
       }
     }
 
-
-
+    getPageUrl();
   </script>
 </body>
 </html>
