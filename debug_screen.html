@@ -297,8 +297,7 @@
 
     function getPageUrl() {
       try {
-        const url = window.location.ancestorOrigins[0] ?? document.referrer;
-        document.getElementById('page-url').textContent = `>> ${url}`;
+        document.getElementById('page-url').textContent = window.location.ancestorOrigins[0] ?? document.referrer;
       }catch (error) {
         document.getElementById('page-url').textContent = error;
       }
