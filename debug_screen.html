@@ -69,7 +69,7 @@
 </head>
 <body>
   <div class="section-wrapper">
-    <p><strong>URL: </strong><span id="page-url"></span></p>
+    <p><strong>Origin: </strong><span id="page-url"></span></p>
   </div>
 
   <div class="section-wrapper">
@@ -94,7 +94,6 @@
     <h2>Static Resources</h2>
     <ul id="page-specifics"></ul>
   </div>
-
 
 
   <script>
@@ -295,15 +294,18 @@
       }
     }
 
-    function getPageUrl() {
-      try {
-        document.getElementById('page-url').textContent = window.location.ancestorOrigins[0] ?? document.referrer;
-      }catch (error) {
-        document.getElementById('page-url').textContent = error;
+    function getParentOrigin() {
+      const parentOrigin = (((window.location !== window.parent.location) ? document.referrer : document.location) || "").toString();
+      if (parentOrigin) {
+        document.getElementById('page-url').textContent = new URL(parentOrigin).origin;
+      } else if (document.location.ancestorOrigins && document.location.ancestorOrigins.length) {
+        document.getElementById('page-url').textContent = document.location.ancestorOrigins[0];
+      } else {
+        document.getElementById('page-url').textContent = "N/A";
       }
     }
 
-    getPageUrl();
+    getParentOrigin();
   </script>
 </body>
 </html>
