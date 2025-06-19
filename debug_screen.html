@@ -294,7 +294,16 @@
         addWebsocketComplex('Thrown Error', e);
       }
     }
-    document.getElementById('page-url').textContent = (window.location !== window.parent.location) ? document.referrer : document.location.href;
+
+    function getPageUrl() {
+      try {
+        document.getElementById('page-url').textContent = (window.location !== window.parent.location) ? document.referrer : document.location.href;
+      }catch (error) {
+        document.getElementById('page-url').textContent = error.message;
+      }
+    }
+
+
 
   </script>
 </body>
